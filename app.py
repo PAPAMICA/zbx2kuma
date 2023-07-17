@@ -52,7 +52,7 @@ def zabbix_get_status(url, auth_token):
         raise Exception('Échec de la récupération des statuts depuis Zabbix.')
 
 
-zabbix_url = os.environ.get('ZABBIX_URL')
+zabbix_url = os.environ.get('ZABBIX_URL') + '/api_jsonrpc.php'
 zabbix_username = os.environ.get('ZABBIX_USERNAME')
 zabbix_password = os.environ.get('ZABBIX_PASSWORD')
 
