@@ -1,0 +1,21 @@
+version : '3.4'
+
+services:
+  zbx2kuma:
+    image: zbx2kuma
+    container_name: zbx2kuma
+    networks:
+      - default
+    environment:
+      ZABBIX_URL: ''
+      ZABBIX_USERNAME: ''
+      ZABBIX_PASSWORD: ''
+      KUMA_URL: ''
+      KUMA_USERNAME: ''
+      KUMA_PASSWORD: ''
+    volumes:
+    - /etc/localtime:/etc/localtime
+networks:
+  default:
+    external:
+      name: proxy
