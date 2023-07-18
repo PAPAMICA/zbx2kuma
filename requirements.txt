@@ -1,2 +1,2 @@
-requests
-uptime-kuma-api
+requests==2.31.0
+uptime-kuma-api==1.1.0

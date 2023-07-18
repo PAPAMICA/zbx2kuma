@@ -14,7 +14,7 @@ services:
       KUMA_USERNAME: ''
       KUMA_PASSWORD: ''
     volumes:
-    - /etc/localtime:/etc/localtime
+    - /etc/localtime:/etc/localtime:ro
 networks:
   default:
     external:
