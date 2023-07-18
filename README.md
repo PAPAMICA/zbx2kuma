@@ -24,6 +24,7 @@ It creates the different tags, monitors, a status page, and incidents dynamicall
 
 Compatible with Zabix 6.x and Uptime Kuma 1.21.3.
 
+
 # Configuration
 ## Credentials
 Add the following environment variables:
@@ -55,10 +56,11 @@ Supported version: 1.21.3
 To avoid any conflict, install a new instance dedicated to zbx2kuma.
 No other configuration is necessary.
 
-# Déployer
+
+# Use
 
 ## Docker
-La méthode la plus simple reste de déployer le script avec Docker.
+The simplest method is to deploy the script using Docker.
 
 Clone repo :
 ```bash
