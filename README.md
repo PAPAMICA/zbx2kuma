@@ -8,7 +8,7 @@
   <a href="#"><img src="https://readme-typing-svg.herokuapp.com?center=true&vCenter=true&lines=zbx2kuma;"></a>
 </p>
 <p align="center">
-    A CDN for images, with proxy, api, webinterface fully automated !
+    Synchronize your Uptime Kuma with Zabbix events !
 </p>
 <p align="center">
     <a href="#"><img src="https://img.shields.io/badge/python-%233570A0.svg?style=for-the-badge&logo=python&logoColor=FFE05D"> </a>
