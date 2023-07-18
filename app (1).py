@@ -1,10 +1,10 @@
-#!/usr/local/bin/python3
-
 import requests
 import json
 import os
 from uptime_kuma_api import UptimeKumaApi
 from uptime_kuma_api import MonitorType,IncidentStyle
+
+
 
 
 def zabbix_login(url, username, password):
@@ -58,25 +58,13 @@ def zabbix_get_status(url, auth_token):
         raise Exception('Échec de la récupération des statuts depuis Zabbix.')
 
 
-# Vérification des variables d'environnement
-required_env_vars = ['ZABBIX_URL', 'ZABBIX_USERNAME', 'ZABBIX_PASSWORD', 'KUMA_URL', 'KUMA_USERNAME', 'KUMA_PASSWORD']
-
-missing_env_vars = [var for var in required_env_vars if var not in os.environ]
-
-if missing_env_vars:
-    print("Les variables d'environnement suivantes ne sont pas configurées :")
-    for var in missing_env_vars:
-        print(var)
-    exit()
-
-
 zabbix_url = os.environ.get('ZABBIX_URL') + '/api_jsonrpc.php'
 zabbix_username = os.environ.get('ZABBIX_USERNAME')
 zabbix_password = os.environ.get('ZABBIX_PASSWORD')
 
 auth_token = zabbix_login(zabbix_url, zabbix_username, zabbix_password)
 status = zabbix_get_status(zabbix_url, auth_token)
-#print(status)
+print(status)
 
 monitors = []
 statuspages = []
@@ -105,13 +93,15 @@ with UptimeKumaApi(os.environ.get('KUMA_URL')) as api:
     else:
         print(f"Statuspage zbx2kuma already exist !")
 
-    monitors_id_list = []
-    events_list = []
-    categories = []
+monitors_id_list = []
+events_list = []
+categories = []
 
 
 
 
+with UptimeKumaApi(os.environ.get('KUMA_URL')) as api:
+    api.login(os.environ.get('KUMA_USERNAME'), os.environ.get('KUMA_PASSWORD'))
     for item in status:
         if 'parents' in item and len(item['parents']) > 0:
             for parent in item['parents']:
@@ -128,6 +118,8 @@ with UptimeKumaApi(os.environ.get('KUMA_URL')) as api:
                 else:
                     print(f"Tag {parent['name']} already exist !")
 
+with UptimeKumaApi(os.environ.get('KUMA_URL')) as api:
+    api.login(os.environ.get('KUMA_USERNAME'), os.environ.get('KUMA_PASSWORD'))
     for item in status:
         #print(dict(item))
         status_text = ""
@@ -164,18 +156,11 @@ with UptimeKumaApi(os.environ.get('KUMA_URL')) as api:
 
         if 'parents' in item and len(item['parents']) > 0:
             if item['name'] not in [monitor['name'] for monitor in monitors]:
-                kuma_monitor=next((tag['value'] for tag in item['tags'] if tag['tag'] == 'kuma.monitor'), None)
-                
-
-
                 monitor_added = api.add_monitor(
-                    
-                    type= MonitorType.HTTP if kuma_monitor == 'HTTP' else MonitorType.PORT if kuma_monitor == 'PORT' else MonitorType.PING if kuma_monitor == 'PING' else MonitorType.KEYWORD if kuma_monitor == 'KEYWORD' else MonitorType.GRPC_KEYWORD if kuma_monitor == 'GRPC_KEYWORD' else MonitorType.DNS if kuma_monitor == 'DNS' else MonitorType.DOCKER if kuma_monitor == 'DOCKER' else MonitorType.PUSH if kuma_monitor == 'PUSH' else MonitorType.STEAM if kuma_monitor == 'STEAM' else MonitorType.GAMEDIG if kuma_monitor == 'GAMEDIG' else MonitorType.MQTT if kuma_monitor == 'MQTT' else MonitorType.SQLSERVER if kuma_monitor == 'SQLSERVER' else MonitorType.POSTGRES if kuma_monitor == 'POSTGRES' else MonitorType.MYSQL if kuma_monitor == 'MYSQL' else MonitorType.MONGODB if kuma_monitor == 'MONGODB' else MonitorType.RADIUS if kuma_monitor == 'RADIUS' else MonitorType.REDIS if kuma_monitor == 'REDIS' else MonitorType.GROUP,
+                    type=MonitorType.HTTP,
                     name=item['name'],
                     #tag=item['parents'][0]['name'],
-                    #url='https://traefik-' + item['name'] + '.papamica.net'
-                    url=next((tag['value'] for tag in item['tags'] if tag['tag'] == 'kuma.url'), None)
-
+                    url='https://traefik-' + item['name'] + '.papamica.net'
                 )
 
                 for parent in item['parents']:
@@ -189,35 +174,36 @@ with UptimeKumaApi(os.environ.get('KUMA_URL')) as api:
             else:
                 print(f"Monitor {item['name']} already exist !")
 
-    publicGroupList = []
-    monitors_list = []
-    monitors = []
-    monitors_list = api.get_monitors()
-    for monitor in monitors_list:
-        #print(monitor)
-        monitors.append({
-                "id": monitor['id'],
-                "name": monitor['name'],
-                "tag": monitor['tags'][0]['name']
-            })
-    i=0
-    for category in tags:
-        monitors_id_list = []
-        monitors_with_category = [monitor['id'] for monitor in monitors if monitor['tag'] == category['name']]
-        for monitor in monitors_with_category:
-            monitors_id_list.append({
-                'id': monitor
-            })
-        i=i+1
-
-        publicGroupList.append({
-            'name': category['name'],
-            'weight': i,
-            'monitorList': monitors_id_list
+publicGroupList = []
+monitors_list = []
+monitors = []
+monitors_list = api.get_monitors()
+for monitor in monitors_list:
+    #print(monitor)
+    monitors.append({
+            "id": monitor['id'],
+            "name": monitor['name'],
+            "tag": monitor['tags'][0]['name']
         })
+i=0
 
-    #print(publicGroupList)
+for category in tags:
+    monitors_id_list = []
+    monitors_with_category = [monitor['id'] for monitor in monitors if monitor['tag'] == category['name']]
+    for monitor in monitors_with_category:
+        monitors_id_list.append({
+            'id': monitor
+        })
+    i=i+1
 
+    publicGroupList.append({
+        'name': category['name'],
+        'weight': i,
+        'monitorList': monitors_id_list
+    })
+
+with UptimeKumaApi(os.environ.get('KUMA_URL')) as api:
+    api.login(os.environ.get('KUMA_USERNAME'), os.environ.get('KUMA_PASSWORD'))
     api.save_status_page(
         slug="zbx2kuma",
         title="zbx2kuma",
@@ -225,21 +211,19 @@ with UptimeKumaApi(os.environ.get('KUMA_URL')) as api:
         publicGroupList=publicGroupList
     )
     content = ""
-    print("\n\nMise à jour des événemments :")
     if events_list:
         for event in events_list:
-            print(f"Evenement mis à jour : {event['source']} → {event['name']}")
             content = content + "\n\n**" +  event['source'] + "** → " + event['name']
+    # #print(f"{event['eventid']} - {event['name']}")
+    # with UptimeKumaApi(os.environ.get('KUMA_URL')) as api:
+    #     api.login(os.environ.get('KUMA_USERNAME'), os.environ.get('KUMA_PASSWORD'))
         api.post_incident(
             slug="zbx2kuma",
             title="Incidents en cours",
             content=content,
             style=IncidentStyle.WARNING
-            )
-    else:
-        print("Pas d'événemments !")
-        api.unpin_incident(slug="zbx2kuma")
-    api.disconnect()
+        )
+        api.disconnect()
 
 
 
