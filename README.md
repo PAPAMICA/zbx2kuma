@@ -47,9 +47,10 @@ Create services directly in Zabbix, the script only accepts one level of parent:
 Remember to add the following tags to the children:
  - name = Monitor name (Example)
  - kuma.monitor = Monitor type (HTTP|PORT|PING)
- - kuma.url = Monitor URL (Example.papamica.com)
- - kuma.port = Monitor port (Optional: if kuma.monitor = PORT)
-
+ - HTTP: kuma.url = Monitor URL (https://example.papamica.com)
+ - PORT/PING: kuma.hostname = Monitor hostname (example.papamica.com)
+ - PORT: kuma.port = Monitor port
+ 
 ## Uptime Kuma
 Supported version: 1.21.3
 
